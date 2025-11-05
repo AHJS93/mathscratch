@@ -155,4 +155,4 @@ styled_chord_df = chord_df.style.apply(
 ])
 
 # Display table
-st.dataframe(styled_chord_df, use_container_width=True, hide_index=True)
+st.dataframe(styled_chord_df, width='stretch', hide_index=True)
