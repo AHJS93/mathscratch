@@ -76,6 +76,7 @@ def find_parent_major(selected_key, selected_mode):
 # ------------------------------------------------------------
 st.set_page_config(page_title="Mode & Key Chord Calculator", page_icon="🎵")
 
+
 # 🔹 Global font & table styling
 st.markdown("""
     <style>
@@ -108,8 +109,10 @@ st.markdown("""
 selected_key = st.radio("Select a Key", NOTES_SHARP, index=0, horizontal=True)
 selected_mode = st.radio("Select a Mode", list(MODE_PATTERNS.keys()), horizontal=True)
 parallel = st.checkbox("Show Parallel Modes (same tonic)")
+brightness_mode = st.checkbox("Highlight Modes by Distinct Colors")
+sort_by_brightness = st.checkbox("Sort Rows by Brightness")
 
-# Compute results
+# 🔹 Compute results
 if parallel:
     results = parallel_modes(selected_key)
     st.subheader(f"Parallel modes for {selected_key}:")
@@ -121,38 +124,60 @@ else:
 # Reorder to start with selected mode
 results = reorder_modes(results, selected_mode)
 
-# ------------------------------------------------------------
-# Build DataFrame with chords in separate columns
-# ------------------------------------------------------------
-# Convert dict to list of dicts
+# 🔹 Build DataFrame
 data_list = [{"Mode": mode, "Chords": chords} for mode, chords in results.items()]
 df_chords = pd.DataFrame(data_list)
 
-# Split chords into separate columns dynamically
+# Split chords into separate columns
 max_chords = max(df_chords["Chords"].str.len())
 chord_columns = pd.DataFrame(df_chords["Chords"].tolist(), columns=[f"Chord {i+1}" for i in range(max_chords)])
-
-# Combine Mode column with chord columns
 chord_df = pd.concat([df_chords["Mode"], chord_columns], axis=1)
 
-# Highlight selected row & parent Ionian
-def highlight_rows(row, selected_mode_name, parent_key_name):
-    mode_name = row["Mode"]
-    if mode_name.endswith(selected_mode_name):
-        return ['background-color: #2E86C1; color: white; font-weight: bold'] * len(row)
-    elif not parallel and mode_name.startswith(parent_key_name) and "Ionian" in mode_name:
-        return ['background-color: rgba(46, 134, 193, 0.2); font-weight: bold'] * len(row)
-    else:
-        return [''] * len(row)
+# 🔹 Brightness mapping for sorting and coloring
+BRIGHTNESS_ORDER = ["Lydian", "Ionian", "Mixolydian", "Dorian", "Aeolian", "Phrygian", "Locrian"]
+BRIGHTNESS_MAP = {mode: idx for idx, mode in enumerate(BRIGHTNESS_ORDER)}
+MODE_COLORS = {
+    "Lydian": "rgba(0, 255, 255, 0.5)",       # cyan
+    "Ionian": "rgba(0, 200, 0, 0.5)",         # green
+    "Mixolydian": "rgba(173, 255, 47, 0.5)",  # yellow-green
+    "Dorian": "rgba(255, 255, 0, 0.5)",       # yellow
+    "Aeolian": "rgba(255, 165, 0, 0.5)",      # orange
+    "Phrygian": "rgba(255, 69, 0, 0.5)",      # red-orange
+    "Locrian": "rgba(128, 0, 128, 0.5)",      # purple
+}
 
+# 🔹 Sort by brightness if requested
+if sort_by_brightness:
+    chord_df["BrightnessRank"] = chord_df["Mode"].apply(lambda x: BRIGHTNESS_MAP.get(x.split()[-1], 100))
+    chord_df = chord_df.sort_values("BrightnessRank").drop(columns=["BrightnessRank"]).reset_index(drop=True)
+
+# 🔹 Highlighting function
+def highlight_rows(row, selected_mode_name, parent_key_name, brightness=False):
+    mode_name = row["Mode"]
+    if brightness:
+        mode_key = mode_name.split()[-1]
+        color = MODE_COLORS.get(mode_key, '')
+        if color:
+            return [f'background-color: {color}; font-weight: bold'] * len(row)
+        return [''] * len(row)
+    else:
+        if mode_name.endswith(selected_mode_name):
+            return ['background-color: #2E86C1; color: white; font-weight: bold'] * len(row)
+        elif not parallel and mode_name.startswith(parent_key_name) and "Ionian" in mode_name:
+            return ['background-color: rgba(46, 134, 193, 0.2); font-weight: bold'] * len(row)
+        else:
+            return [''] * len(row)
+
+# 🔹 Apply styling
 styled_chord_df = chord_df.style.apply(
     highlight_rows,
     axis=1,
     selected_mode_name=selected_mode,
-    parent_key_name=parent_key if not parallel else ""
+    parent_key_name=parent_key if not parallel else "",
+    brightness=brightness_mode
 ).set_table_styles([
     {"selector": "td", "props": [("padding", "8px 20px"), ("text-align", "center")]}
 ])
 
-# Display table
+# 🔹 Display the table
 st.dataframe(styled_chord_df, width='stretch', hide_index=True)
