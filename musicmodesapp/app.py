@@ -109,8 +109,8 @@ st.markdown("""
 selected_key = st.radio("Select a Key", NOTES_SHARP, index=0, horizontal=True)
 selected_mode = st.radio("Select a Mode", list(MODE_PATTERNS.keys()), horizontal=True)
 parallel = st.checkbox("Show Parallel Modes (same tonic)")
-brightness_mode = st.checkbox("Highlight Modes by Distinct Colors")
-sort_by_brightness = st.checkbox("Sort Rows by Brightness")
+brightness_mode = st.checkbox("Highlight Modes by Brightness")
+sort_by_brightness = st.checkbox("Sort Modes by Brightness")
 
 # 🔹 Compute results
 if parallel:
@@ -137,13 +137,13 @@ chord_df = pd.concat([df_chords["Mode"], chord_columns], axis=1)
 BRIGHTNESS_ORDER = ["Lydian", "Ionian", "Mixolydian", "Dorian", "Aeolian", "Phrygian", "Locrian"]
 BRIGHTNESS_MAP = {mode: idx for idx, mode in enumerate(BRIGHTNESS_ORDER)}
 MODE_COLORS = {
-    "Lydian": "rgba(0, 255, 255, 0.5)",       # cyan
-    "Ionian": "rgba(0, 200, 0, 0.5)",         # green
-    "Mixolydian": "rgba(173, 255, 47, 0.5)",  # yellow-green
-    "Dorian": "rgba(255, 255, 0, 0.5)",       # yellow
-    "Aeolian": "rgba(255, 165, 0, 0.5)",      # orange
-    "Phrygian": "rgba(255, 69, 0, 0.5)",      # red-orange
-    "Locrian": "rgba(128, 0, 128, 0.5)",      # purple
+    "Lydian": "rgba(0, 255, 255, 0.3)",       # cyan
+    "Ionian": "rgba(0, 200, 0, 0.3)",         # green
+    "Mixolydian": "rgba(173, 255, 47, 0.3)",  # yellow-green
+    "Dorian": "rgba(255, 255, 0, 0.3)",       # yellow
+    "Aeolian": "rgba(255, 165, 0, 0.3)",      # orange
+    "Phrygian": "rgba(255, 69, 0, 0.3)",      # red-orange
+    "Locrian": "rgba(128, 0, 128, 0.3)",      # purple
 }
 
 # 🔹 Sort by brightness if requested
