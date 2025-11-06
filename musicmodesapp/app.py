@@ -106,7 +106,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Inputs
-selected_key = st.radio("Select a Key", NOTES_SHARP, index=0, horizontal=True)
+selected_key = st.pills("Select a Key", NOTES_SHARP, index=0, horizontal=True, selection_mode="single")
 selected_mode = st.radio("Select a Mode", list(MODE_PATTERNS.keys()), horizontal=True)
 parallel = st.checkbox("Show Parallel Modes (same tonic)")
 brightness_mode = st.checkbox("Highlight Modes by Brightness")
